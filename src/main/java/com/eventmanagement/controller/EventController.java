@@ -27,6 +27,7 @@ public class EventController {
     private final EventService eventService;
 
     /**
+     * Create an event (only by authenticated users)
      * POST /api/v1/events
      */
     @PostMapping
@@ -36,6 +37,7 @@ public class EventController {
     }
 
     /**
+     * Update an event (only by host or admin)
      * PUT /api/v1/events/{eventId}
      */
     @PutMapping("/{eventId}")
@@ -46,6 +48,7 @@ public class EventController {
     }
 
     /**
+     * Delete an event (host or admin)
      * DELETE /api/v1/events/{eventId}
      */
     @DeleteMapping("/{eventId}")
@@ -55,6 +58,7 @@ public class EventController {
     }
 
     /**
+     * Status check of an event
      * GET /api/v1/events/{eventId}
      */
     @GetMapping("/{eventId}")
@@ -64,6 +68,7 @@ public class EventController {
     }
 
     /**
+     * List upcoming events (paginated)
      * GET /api/v1/events/upcoming
      */
     @GetMapping("/upcoming")
@@ -74,6 +79,7 @@ public class EventController {
     }
 
     /**
+     * List events with filtering by date, location, visibility
      * GET /api/v1/events?visibility=PUBLIC&location=Colombo&startDate=2025-07-06T00:00:00
      */
     @GetMapping
@@ -90,6 +96,7 @@ public class EventController {
     }
 
     /**
+     * List all events a user is hosting or attending
      * GET /api/v1/events/hosting
      */
     @GetMapping("/hosting")
@@ -100,6 +107,7 @@ public class EventController {
     }
 
     /**
+     * Get event details with attendee count
      * GET /api/v1/events/attending
      */
     @GetMapping("/attending")
