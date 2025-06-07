@@ -1,6 +1,7 @@
 package com.eventmanagement.security;
 
 import com.eventmanagement.entity.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -10,9 +11,13 @@ import java.util.UUID;
 
 public class CustomUserDetails implements UserDetails {
 
+    @Getter
     private final UUID id;
+    @Getter
     private final String name;
+    @Getter
     private final String email;
+
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
 
