@@ -6,6 +6,7 @@ import com.eventmanagement.dto.event.UpdateEventRequest;
 import com.eventmanagement.entity.Event;
 import com.eventmanagement.entity.User;
 import com.eventmanagement.entity.Visibility;
+import com.eventmanagement.mapper.EventMapper;
 import com.eventmanagement.repository.AttendanceRepository;
 import com.eventmanagement.repository.EventRepository;
 import com.eventmanagement.repository.UserRepository;
@@ -33,6 +34,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final AttendanceRepository attendanceRepository;
+    private final EventMapper eventMapper;
 
     /**
      * Create new event
@@ -45,15 +47,8 @@ public class EventService {
             throw new RuntimeException("ENd time should be after the start time");
         }
 
-        Event event = new Event(
-                request.getTitle(),
-                request.getDescription(),
-                currentUserId,
-                request.getStartTime(),
-                request.getEndTime(),
-                request.getLocation(),
-                request.getVisibility()
-        );
+        Event event = eventMapper.toEntity(request); // Using MapStruct
+        event.setHostId(currentUserId);
 
         Event savedEvent = eventRepository.save(event);
         log.info("Event created: {} by user: {}", savedEvent.getId(), currentUserId);
@@ -71,28 +66,11 @@ public class EventService {
 
         UUID currentUserId = getCurrentUserId();
 
-        if (!event.getHostId().equals(currentUserId) && isCurrentUserAdmin()) {
+        if (!event.getHostId().equals(currentUserId) && !isCurrentUserAdmin()) {
             throw new RuntimeException("Access denied");
         }
 
-        if (request.getTitle() != null) {
-            event.setTitle(request.getTitle());
-        }
-        if (request.getDescription() != null) {
-            event.setDescription(request.getDescription());
-        }
-        if (request.getStartTime() != null) {
-            event.setStartTime(request.getStartTime());
-        }
-        if (request.getEndTime() != null) {
-            event.setEndTime(request.getEndTime());
-        }
-        if (request.getLocation() != null) {
-            event.setLocation(request.getLocation());
-        }
-        if (request.getVisibility() != null) {
-            event.setVisibility(request.getVisibility());
-        }
+        eventMapper.updateEntityFromRequest(request, event); // Using MapStruct
 
         if (event.getEndTime().isBefore(event.getStartTime())) {
             throw new RuntimeException("ENd time should be after the start time");
@@ -115,7 +93,7 @@ public class EventService {
         UUID currentUserId = getCurrentUserId();
 
         // Check if user is host or admin
-        if (!event.getHostId().equals(currentUserId) && isCurrentUserAdmin()) {
+        if (!event.getHostId().equals(currentUserId) && !isCurrentUserAdmin()) {
             throw new RuntimeException("Access denied");
         }
 
@@ -189,20 +167,7 @@ public class EventService {
                 .map(User::getName)
                 .orElse("Unknown Host");
 
-        return new EventResponse(
-                event.getId().toString(),
-                event.getTitle(),
-                event.getDescription(),
-                event.getHostId().toString(),
-                hostName,
-                event.getStartTime(),
-                event.getEndTime(),
-                event.getLocation(),
-                event.getVisibility(),
-                attendeeCount,
-                event.getCreatedAt(),
-                event.getUpdatedAt()
-        );
+        return eventMapper.toResponse(event, hostName, attendeeCount); // Using MapStruct
     }
 
     /**
@@ -220,6 +185,6 @@ public class EventService {
     private boolean isCurrentUserAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication.getAuthorities().stream()
-                .noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+            .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

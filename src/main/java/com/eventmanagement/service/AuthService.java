@@ -4,6 +4,7 @@ import com.eventmanagement.dto.auth.AuthResponse;
 import com.eventmanagement.dto.auth.LoginRequest;
 import com.eventmanagement.dto.auth.RegisterRequest;
 import com.eventmanagement.entity.User;
+import com.eventmanagement.mapper.AuthMapper;
 import com.eventmanagement.repository.UserRepository;
 import com.eventmanagement.security.CustomUserDetails;
 import com.eventmanagement.security.JwtUtil;
@@ -22,6 +23,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final AuthMapper authMapper;
 
     /**
      *Handle User Registration
@@ -67,13 +69,7 @@ public class AuthService {
 
 
     private AuthResponse createAuthResponse(String token, User user) {
-        AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo(
-                user.getId().toString(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole().name()
-        );
-
+        AuthResponse.UserInfo userInfo = authMapper.toUserInfo(user);
         return new AuthResponse(token, userInfo);
     }
 }
