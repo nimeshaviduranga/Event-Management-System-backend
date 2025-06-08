@@ -13,6 +13,8 @@ import com.eventmanagement.repository.UserRepository;
 import com.eventmanagement.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class AttendanceService {
      * Respond to an event
      */
     @Transactional
+    @CacheEvict(value = {"attendeeCounts", "userEvents"}, allEntries = true)
     public AttendanceResponse respondToAnEvent(CreateAttendanceRequest request) {
         UUID currentUserId = getCurrentUserId();
 
@@ -68,6 +71,7 @@ public class AttendanceService {
      * Update attendance status for an event
      */
     @Transactional
+    @CacheEvict(value = {"attendeeCounts", "userEvents"}, allEntries = true)
     public AttendanceResponse updateTheAttendance(UUID eventId, UpdateAttendanceRequest request) {
         UUID currentUserId = getCurrentUserId();
 
@@ -87,6 +91,7 @@ public class AttendanceService {
     /**
      * Get my attendance status for a specific event
      */
+    @Cacheable(value = "attendeeCounts", key = "#eventId")
     public AttendanceResponse getMyAttendanceStatus(UUID eventId) {
         UUID currentUserId = getCurrentUserId();
 

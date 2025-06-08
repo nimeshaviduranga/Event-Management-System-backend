@@ -13,6 +13,8 @@ import com.eventmanagement.repository.UserRepository;
 import com.eventmanagement.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -40,6 +42,7 @@ public class EventService {
      * Create new event
      */
     @Transactional
+    @Cacheable(value = "events", key = "#eventId")
     public EventResponse createAnEvent(CreateEventRequest request) {
         UUID currentUserId = getCurrentUserId();
 
@@ -60,6 +63,7 @@ public class EventService {
      * Update Event
      */
     @Transactional
+    @CacheEvict(value = {"events", "upcomingEvents", "userEvents"}, key = "#eventId")
     public EventResponse updateAnEvent(UUID eventId, UpdateEventRequest request) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event has not been found"));
@@ -86,6 +90,7 @@ public class EventService {
      * Delete Event
      */
     @Transactional
+    @CacheEvict(value = {"events", "upcomingEvents", "userEvents"}, allEntries = true)
     public void deleteAnEvent(UUID eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event has not been found"));
@@ -104,6 +109,7 @@ public class EventService {
     /**
      * Get Event by id
      */
+    @Cacheable(value = "events", key = "#eventId")
     public EventResponse getAnEvent(UUID eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event has not been found"));
@@ -134,6 +140,7 @@ public class EventService {
     /**
      * List hosted events by user
      */
+    @Cacheable(value = "userEvents", key = "#root.target.getCurrentUserId() + '_hosting_' + #pageable.pageNumber")
     public Page<EventResponse> getEventsHostedByUser(Pageable pageable) {
         UUID currentUserId = getCurrentUserId();
         Page<Event> events = eventRepository.findByHostId(currentUserId, pageable);
@@ -143,6 +150,7 @@ public class EventService {
     /**
      * List events user is attending
      */
+    @Cacheable(value = "userEvents", key = "#root.target.getCurrentUserId() + '_attending'")
     public List<EventResponse> getEventsUserIsAttending() {
         UUID currentUserId = getCurrentUserId();
         List<UUID> eventIds = attendanceRepository.findEventIdsByUserId(currentUserId);

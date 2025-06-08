@@ -9,6 +9,8 @@ import com.eventmanagement.repository.UserRepository;
 import com.eventmanagement.security.CustomUserDetails;
 import com.eventmanagement.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +30,7 @@ public class AuthService {
     /**
      *Handle User Registration
      */
+    @CacheEvict(value = "users", key = "#result.user.id")
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email is already registered");
@@ -50,6 +53,7 @@ public class AuthService {
     /**
      * Handle User login
      */
+    @Cacheable(value = "attendeeCounts", key = "#eventId")
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
