@@ -51,9 +51,19 @@ public class AttendanceService {
         );
 
         Attendance savedAttendance = attendanceRepository.save(attendance);
-        return mapToAttendanceResponse(savedAttendance);
+
+        return mapToAttendanceResponseWithEvent(savedAttendance, event);
     }
 
+    /**
+     * Optimized mapping when event is already available
+     */
+    private AttendanceResponse mapToAttendanceResponseWithEvent(Attendance attendance, Event event) {
+        User user = userRepository.findById(attendance.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return attendanceMapper.toResponse(attendance, event.getTitle(), user.getName());
+    }
     /**
      * Update attendance status for an event
      */
