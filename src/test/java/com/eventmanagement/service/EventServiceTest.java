@@ -91,7 +91,7 @@ class EventServiceTest {
         when(attendanceRepository.countByEventId(any())).thenReturn(0L);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(eventMapper.toResponse(any(), anyString(), anyLong())).thenReturn(new EventResponse());
-S
+
         EventResponse response = eventService.createAnEvent(createEventRequest);
 
         assertThat(response).isNotNull();
