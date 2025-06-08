@@ -37,6 +37,9 @@ public class AttendanceService {
     public AttendanceResponse respondToAnEvent(CreateAttendanceRequest request) {
         UUID currentUserId = getCurrentUserId();
 
+        Event event = eventRepository.findById(request.getEventId())
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
         if (attendanceRepository.existsByEventIdAndUserId(request.getEventId(), currentUserId)) {
             throw new RuntimeException("Already responded to the event");
         }
@@ -78,7 +81,7 @@ public class AttendanceService {
         UUID currentUserId = getCurrentUserId();
 
         Attendance attendance = attendanceRepository.findByEventIdAndUserId(eventId, currentUserId)
-                .orElseThrow(() -> new RuntimeException("Already responded to the event"));
+                .orElseThrow(() -> new RuntimeException("Not responded to the event yet"));
 
         return mapToAttendanceResponse(attendance);
     }
