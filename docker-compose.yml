@@ -27,7 +27,7 @@ services:
       - postgres
       - redis
     env_file:
-      - .env.example
+      - .env
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
