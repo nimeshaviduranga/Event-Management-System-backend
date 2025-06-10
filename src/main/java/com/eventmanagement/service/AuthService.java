@@ -53,7 +53,6 @@ public class AuthService {
     /**
      * Handle User login
      */
-    @Cacheable(value = "attendeeCounts", key = "#eventId")
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
