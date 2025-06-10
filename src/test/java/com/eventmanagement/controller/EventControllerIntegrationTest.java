@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,12 +22,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@TestPropertySource(properties = {
+        "spring.cache.type=none"
+})
 class EventControllerIntegrationTest {
 
     @Autowired
@@ -209,6 +214,7 @@ class EventControllerIntegrationTest {
 
         mockMvc.perform(get("/events/" + createdEventId)
                         .header("Authorization", "Bearer " + userToken))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(createdEventId))
                 .andExpect(jsonPath("$.title").value("Test Event"))
@@ -248,6 +254,7 @@ class EventControllerIntegrationTest {
                         .param("page", "0")
                         .param("size", "10")
                         .header("Authorization", "Bearer " + userToken))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.pageable").exists())
@@ -330,8 +337,8 @@ class EventControllerIntegrationTest {
         CreateEventRequest request = new CreateEventRequest();
         request.setTitle("Test Event");
         request.setDescription("Test Description");
-        request.setStartTime(LocalDateTime.now().plusDays(1));
-        request.setEndTime(LocalDateTime.now().plusDays(1).plusHours(2));
+        request.setStartTime(LocalDateTime.now().plusDays(7));
+        request.setEndTime(LocalDateTime.now().plusDays(7).plusHours(2));
         request.setLocation("Test Location");
         request.setVisibility(visibility);
 

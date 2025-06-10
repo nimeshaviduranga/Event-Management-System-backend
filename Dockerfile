@@ -8,7 +8,7 @@ COPY pom.xml .
 RUN ./mvnw dependency:go-offline -B
 
 COPY src src
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package
 
 FROM amazoncorretto:17-alpine
 

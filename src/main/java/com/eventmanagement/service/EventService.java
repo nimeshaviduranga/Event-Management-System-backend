@@ -42,7 +42,7 @@ public class EventService {
      * Create new event
      */
     @Transactional
-    @Cacheable(value = "events", key = "#eventId")
+    @CacheEvict(value = {"upcomingEvents", "userEvents"}, allEntries = true)
     public EventResponse createAnEvent(CreateEventRequest request) {
         UUID currentUserId = getCurrentUserId();
 
@@ -63,7 +63,7 @@ public class EventService {
      * Update Event
      */
     @Transactional
-    @CacheEvict(value = {"events", "upcomingEvents", "userEvents"}, key = "#eventId")
+    @CacheEvict(value = {"events", "upcomingEvents", "userEvents"}, allEntries = true)
     public EventResponse updateAnEvent(UUID eventId, UpdateEventRequest request) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event has not been found"));
@@ -109,7 +109,7 @@ public class EventService {
     /**
      * Get Event by id
      */
-    @Cacheable(value = "events", key = "#eventId")
+    @Cacheable(value = "events", key = "#eventId.toString()")
     public EventResponse getAnEvent(UUID eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event has not been found"));
@@ -132,6 +132,7 @@ public class EventService {
     /**
      * List upcoming events
      */
+    @Cacheable(value = "upcomingEvents", key = "'page_' + #pageable.pageNumber + '_size_' + #pageable.pageSize")
     public Page<EventResponse> getUpcomingEvents(Pageable pageable) {
         Page<Event> events = eventRepository.findUpcomingEvents(LocalDateTime.now(), pageable);
         return events.map(this::mapToEventResponse);
@@ -140,7 +141,6 @@ public class EventService {
     /**
      * List hosted events by user
      */
-    @Cacheable(value = "userEvents", key = "#root.target.getCurrentUserId() + '_hosting_' + #pageable.pageNumber")
     public Page<EventResponse> getEventsHostedByUser(Pageable pageable) {
         UUID currentUserId = getCurrentUserId();
         Page<Event> events = eventRepository.findByHostId(currentUserId, pageable);
@@ -150,7 +150,6 @@ public class EventService {
     /**
      * List events user is attending
      */
-    @Cacheable(value = "userEvents", key = "#root.target.getCurrentUserId() + '_attending'")
     public List<EventResponse> getEventsUserIsAttending() {
         UUID currentUserId = getCurrentUserId();
         List<UUID> eventIds = attendanceRepository.findEventIdsByUserId(currentUserId);

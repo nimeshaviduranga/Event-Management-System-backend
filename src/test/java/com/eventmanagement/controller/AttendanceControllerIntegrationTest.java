@@ -16,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,12 +25,16 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@TestPropertySource(properties = {
+        "spring.cache.type=none"
+})
 class AttendanceControllerIntegrationTest {
 
     @Autowired
@@ -138,6 +143,7 @@ class AttendanceControllerIntegrationTest {
 
         mockMvc.perform(get("/attendance/events/" + eventId + "/my-status")
                         .header("Authorization", "Bearer " + userToken))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("GOING"));
     }
@@ -170,8 +176,9 @@ class AttendanceControllerIntegrationTest {
     private String createEvent(String token) throws Exception {
         CreateEventRequest request = new CreateEventRequest();
         request.setTitle("Test Event");
-        request.setStartTime(LocalDateTime.now().plusDays(1));
-        request.setEndTime(LocalDateTime.now().plusDays(1).plusHours(2));
+        request.setDescription("Test Description");
+        request.setStartTime(LocalDateTime.now().plusDays(7));
+        request.setEndTime(LocalDateTime.now().plusDays(7).plusHours(2));
         request.setLocation("Test Location");
         request.setVisibility(Visibility.PUBLIC);
 
