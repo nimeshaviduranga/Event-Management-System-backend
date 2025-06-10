@@ -32,10 +32,7 @@ Create a `.env` file in the root directory(Check the .env.example file):
 ### 3. Run Application
 ```
 # Start all services
-docker-compose up --build
-
-# Run in background
-docker-compose up --build -d
+docker-compose up -d
 
 # Stop services
 docker-compose down
